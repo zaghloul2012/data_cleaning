@@ -1,6 +1,8 @@
 # Data Cleaning Script
 python script for cleaning and categorizing data scrapped from IMDB to be used in a model for movie recommendation system
 
+**Version: 1.0.0**
+
 ## Description
 Short script for cleaning scrapped data from IMDB to use it later
 
