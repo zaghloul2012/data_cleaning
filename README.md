@@ -4,7 +4,7 @@ python script for cleaning and categorizing data scrapped from IMDB to be used i
 **Version: 1.0.0**
 
 ## Description
-Short script for cleaning scrapped data from IMDB to use it later
+Short script for cleaning scrapped data from IMDB and extracting features from it used later in the model
 
 Sample Input
 {'poster':'p1','title': 'Vikings', 'rating': '8.5','number': '491K', 'directors': [], 'writers': [],'cast': ['Katheryn Winnick', 'Gustaf Skarsgård', 'Alexander Ludwig'], 'languages': ['English', 'Old English', 'Norse, Old', 'Latin', 'French', 'Arabic', 'Greek, Ancient (to 1453)', 'Russian'], 'genres': ['Action', 'Adventure', 'Drama'], 'age_group': 'TV-MA', 'series': True, 'length': '44m', 'year': '2013'}
