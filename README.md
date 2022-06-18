@@ -1,5 +1,6 @@
 # Data Cleaning Script
-python script for cleaning and categorizing data scrapped from IMDB to be used in a model for movie recommendation system
+python script for cleaning and categorizing data scrapped from IMDB to be used in a model for movie recommendation system.
+After cleaning data, I added features part which contain all scrapped data from movie/series to be used in the model
 
 **Version: 1.0.0**
 
@@ -11,5 +12,6 @@ Sample Input
 
 Sample Output
 {'poster': 'p1', 'title': 'Vikings', 'rating': 'high', 'directors': '', 'writers': '', 'cast': 'katherynwinnick gustafskarsgård alexanderludwig ', 'languages': 'english oldenglish norse,old latin french arabic greek,ancient(to1453) russian ', 'genres': 'action adventure drama ', 'age_group': 'TV-MA', 'series': 'series', 'length': 'short', 'year': 'old', 'features': 'Vikings high  katherynwinnick gustafskarsgård alexanderludwig english oldenglish norse,old latin french arabic greek,ancient(to1453) russian action adventure drama TV-MA series short old '}
+
  Note: This format is used for model of movie reccomendation system
  
