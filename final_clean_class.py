@@ -1,42 +1,35 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb  7 21:52:52 2022
-
-@author: Youssef
-"""
-
-
-
-
 import pandas as pd
-
 
 class clean():
     """
-    Clean dataset and categorize some features to produce clean dataset used in movie reccommendation system model 
+    Clean dataset to fix or remove incorrect, corrupted, incorrectly formatted,
+    duplicate, or incomplete data within a dataset.
+    Also it aims to categorize some features to produce clean dataset used in movie reccommendation system model. 
     """
     
-    def __init__(self, lst):
+    def __init__(self, data_path):
         """
         Clean class constructor 
 
         Parameters
         ----------
-        path : lst
-            list of scrapped data to be cleaned and categorized.
+        data_path : list
+            path of dataset scrapped from imdb to be cleaned.
 
         Returns
         -------
         None.
 
         """
-        self.lst = lst
-        self.df = pd.DataFrame(lst)
-
+        self.data_path = data_path
+        self.df = pd.DataFrame(data_path)
 
     def categorize_rating(self, rating):
         """
-        Categorize rating into three groups
+        Categorize rating into three groups where:
+        low: rating <= 5
+        medium: rating <= 7
+        high: else
 
         Parameters
         ----------
@@ -49,11 +42,10 @@ class clean():
             rating group(low - medium - high).
 
         """
-        
-        rating = float(rating)
-        if(rating <= 5):
+
+        if rating <= 5:
             return "low"
-        elif(rating <= 7):
+        elif rating <= 7:
             return "medium"
         else:
             return "high"
@@ -74,22 +66,26 @@ class clean():
             number of raters in numeric format(10000).
 
         """
-        
-        if(raters.lower()[-1] == "k"):
-            return int(float(raters[:-1])*1000)
+        if (raters.lower()[-1] == "k"):
+            return int(float(raters[:-1])*1e3)
+
         elif(raters.lower()[-1] == "m"):
             return int(float(raters[:-1])*1e6)
-        else:
+        
+        else:   # number of raters already in numeric format
             return int(raters)
-
 
     def convert_list_to_string(self,lst):
         """
         Convert list of strings into compact lowered format of strings
+        The purpose of that function is to use these string in the model 
+        to compute cosine similarity.
+        One use of this function is to convert list of directors of movies 
+        into string 
 
         Parameters
         ----------
-        list : list
+        lst : list
             list of strings.
 
         Returns
@@ -99,9 +95,11 @@ class clean():
 
         """
         names = ""
-        for name in lst:
-           names += "".join(name.lower().split())
-           names += " "
+
+        for person in lst:
+            names += "".join(person.lower().split())
+            names += " "    #separate differnet persons
+
         return names
 
     def categorize_length(self, length):
@@ -120,27 +118,34 @@ class clean():
             length group(short-medium-long).
 
         """
-        
-        if length == "" or "-" in length:
+
+        # Error handling 
+        if length == "" or length == None or "-" in length:
             return ""
+
         length = length.split(" ")
         length_in_minutes = 0
         for time in length:
-            if(time[-1] == "m"):
+            if (time[-1] == "m"):
                 length_in_minutes += int(time[:-1])
-            else:
+            elif (time[-1] == "h"):
                 length_in_minutes += int(time[:-1]) * 60
 
+        # Categorizing
         if length_in_minutes <= 90:
             return "short"
+
         elif length_in_minutes <= 150:
             return "medium"
+
         else:
             return "long"
 
     def categorize_year(self, year):
         """
         Categorize publish time of movie into two groups.
+        old: year < 2014
+        new: else
 
         Parameters
         ----------
@@ -174,15 +179,15 @@ class clean():
             Type of title(movie-series).
 
         """
-        
         if title:
             return "series"
         else:
             return "movie"
     
-    def run(self):
+    def clean_and_categorize(self):
         """
         Apply all functions to the dataset to provide features used in model
+        by adding new key called "features"
 
         Returns
         -------
@@ -197,48 +202,44 @@ class clean():
         self.df['new_raters'] = self.df['number'].apply(self.convert_raters_to_numbers)
         self.df = self.df[self.df['new_raters'] > 1e5]
         self.df = self.df.drop(columns=['new_raters', "number"], axis=1)
-        
+
         # Categorize movie/series
         self.df['series'] = self.df['series'].apply(self.is_series)
-        
-        # Convert genres to dtring
+
+        # Convert genres to string
         self.df['genres'] = self.df['genres'].apply(self.convert_list_to_string)
-        
+
         # Convert writers to string
         self.df['writers'] = self.df['writers'].apply(self.convert_list_to_string)
-        
+
         # Convert directors to string
         self.df['directors'] = self.df['directors'].apply(self.convert_list_to_string)
-        
+
         # Convert cast to string
         self.df['cast'] = self.df['cast'].apply(self.convert_list_to_string)
-        
+
         # Convert languages to string
         self.df['languages'] = self.df['languages'].apply(self.convert_list_to_string)
-        
+
         # Categorize length
         self.df['length'] = self.df['length'].apply(self.categorize_length)
-        
+
         # Categorize year
         self.df['year'] = self.df['year'].apply(self.categorize_year)
-        
-        # Drop index column
-        # self.df = self.df.drop(columns=['Unnamed: 0'])
 
-        #Construct the new csv file that contains title of movie and its features
+        # drop the axis column
         columns = self.df.columns[1:]
-        self.df['features'] = self.df['length'].apply(lambda x: "")
+
+        # Construcing features 
         for column in columns:
             if column == "poster":
                 continue
             self.df["features"] += self.df[column] + " "
-        self.df["features"] = self.df["features"].apply(lambda x: x.replace("  ", " "))
-        # self.df = self.df.loc[:, ['title', 'bag_of_words']]
         
         
-    def save_to_dict(self, out):
+    def save_to_dict(self):
         """
-        Save data into dictinary
+        Save data into dictinary so that it can be handled in database
 
         Parameters
         ----------
@@ -250,37 +251,11 @@ class clean():
         None.
 
         """
-        
-        self.out = self.df.to_dict("record")
+        self.out = self.df.to_dict("records")
         return self.out
-        
 
 
 
-def main():
-    # test 
-
-    data_lst  = [{'poster':'p1','title': 'Vikings', 'rating': '8.5',
-                    'number': '491K', 'directors': [], 'writers': [],
-                    'cast': ['Katheryn Winnick', 'Gustaf Skarsgård', 'Alexander Ludwig'],
-                    'languages': ['English', 'Old English', 'Norse, Old', 'Latin', 'French', 'Arabic', 'Greek, Ancient (to 1453)', 'Russian'],
-                    'genres': ['Action', 'Adventure', 'Drama'], 'age_group': 'TV-MA', 'series': True, 'length': '44m', 'year': '2013'},
-                 {'poster':'p2','title': 'Power Book II: Ghost', 'rating': '7.1', 'number': '6.1K',
-                    'directors': [], 'writers': [], 'cast': ['Michael Rainey Jr.', 'Gianni Paolo', 'Lovell Adams-Gray'],
-                    'languages': ['English'], 'genres': ['Crime', 'Drama', 'journey'], 'age_group': 'TV-MA', 'series': True,
-                    'length': '1h', 'year': '2020'},
-                 {'poster':'p3','title': 'Guardians of the Galaxy', 'rating': '8.0', 'number': '1.1M',
-                    'directors': ['James Gunn'], 'writers': [], 'cast': ['Chris Pratt', 'Vin Diesel', 'Bradley Cooper'],
-                    'languages': ['English'], 'genres': ['Action', 'Adventure', 'Comedy'], 'age_group': 'PG-13',
-                    'series': False, 'length': '2h 1m', 'year': '2014'}]
-
-    data = clean(data_lst)
-    data.run()
-    data_in_dict = {}
-    final = data.save_to_dict(data_in_dict)
-    print(final)
 
 
-if __name__ == "__main__":
-    main()
 
